@@ -83,7 +83,7 @@ export default function Play() {
             <div
               onClick={() => handleBoxClick(index)}
               key={index}
-              className='flex justify-center items-center font-bold text-3xl h-[90px] w-[90px] rounded-md cursor-pointer md:text-4xl md:h-[100px] md:w-[100px] xl:text-5xl xl:h-[110px] xl:w-[110px] bg-teal-900'
+              className='flex justify-center items-center font-bold text-3xl h-[90px] w-[90px] rounded-md cursor-pointer select-none md:text-4xl md:h-[100px] md:w-[100px] xl:text-5xl xl:h-[110px] xl:w-[110px] bg-teal-900'
             >
               {box === 'X' ? 'X' : box === 'O' ? 'O' : ''}
             </div>
