@@ -8,12 +8,12 @@ export default function Modal({
 }: {
   className?: string;
   isOpen: boolean;
-  onBackdropClick: () => void;
+  onBackdropClick?: () => void;
   children: React.ReactNode;
 }) {
   return (
     <div
-      onClick={() => onBackdropClick()}
+      onClick={() => (onBackdropClick ? onBackdropClick() : null)}
       className={`fixed inset-0 flex justify-center items-center transition-all ${
         isOpen ? 'visible bg-black/10 backdrop-blur-sm' : 'invisible'
       }`}
