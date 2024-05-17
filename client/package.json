@@ -2,6 +2,7 @@
   "name": "tic-tac-toe-client",
   "private": true,
   "version": "0.0.0",
+  "proxy": "http://localhost:8000",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,6 +11,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.36.2",
+    "axios": "^1.6.8",
     "clsx": "^2.1.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
