@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import getErrorMessage from '../lib/hook-error-handler';
 
@@ -10,3 +10,14 @@ export const useNewSession = () =>
       });
     },
   });
+
+export const useLoadSession = (sessionId: string | null) => {
+  console.log(sessionId);
+  return useQuery({
+    queryKey: ['session'],
+    queryFn: () =>
+      axios.get(`/api/session/${sessionId}`).catch((error) => {
+        throw getErrorMessage(error);
+      }),
+  });
+};

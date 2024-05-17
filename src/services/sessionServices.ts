@@ -1,8 +1,8 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const startNewSession = async ({
+const startNewSession = async ({
   player1,
   player2,
 }: {
@@ -28,4 +28,22 @@ export const startNewSession = async ({
   });
 
   return session;
+};
+
+const loadSession = async (sessionId: string) => {
+  try {
+    const session = await prisma.session.findUniqueOrThrow({
+      where: {
+        id: sessionId,
+      },
+    });
+    return session;
+  } catch (error) {
+    throw new Error('Invalid game session.');
+  }
+};
+
+export default {
+  startNewSession,
+  loadSession,
 };

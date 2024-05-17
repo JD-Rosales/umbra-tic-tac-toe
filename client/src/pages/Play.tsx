@@ -3,9 +3,10 @@ import Modal from '../components/modal';
 import PageContainer from '../components/page-container';
 import { useLocation } from 'react-router-dom';
 import type { boxStateType } from '../types';
+import { useLoadSession } from '../hooks/useSession';
 
 export default function Play() {
-  const location = useLocation();
+  const { data, isSuccess, isError } = useLoadSession(getURLSearchParams());
   const [modalOpen, setModalOpen] = useState(false);
   const [boxState, setBoxState] = useState<boxStateType[]>([
     '',
@@ -69,8 +70,11 @@ export default function Play() {
   // check if there's a winner when the boxState array change
   useEffect(() => {
     checkIfWon();
-    console.log('test');
   }, [boxState]);
+
+  useEffect(() => {
+    if (isSuccess) console.log(data);
+  }, [data, isSuccess, isError]);
 
   return (
     <>
@@ -96,4 +100,9 @@ export default function Play() {
       </Modal>
     </>
   );
+}
+
+function getURLSearchParams() {
+  const urlParams = new URLSearchParams(useLocation().search);
+  return urlParams.get('sessionId');
 }
