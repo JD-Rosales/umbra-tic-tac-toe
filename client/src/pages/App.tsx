@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Modal from '../components/modal';
 import PageContainer from '../components/page-container';
 import Versus from '../components/versus';
+import { useNewSession } from '../hooks/useSession';
+import { useNavigate } from 'react-router-dom';
 
 export default function App() {
+  const startNewSession = useNewSession();
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [players, setPlayers] = useState({
     player1: '',
@@ -18,6 +22,19 @@ export default function App() {
       [name]: value,
     }));
   };
+
+  const handleStartGame = () => {
+    startNewSession.mutate(players);
+  };
+
+  useEffect(() => {
+    if (startNewSession.isSuccess) {
+      startNewSession.reset();
+
+      console.log(startNewSession.data.data.id);
+      navigate(`/play?sessionId=${startNewSession.data.data.id}`);
+    }
+  }, [startNewSession.isSuccess]);
 
   return (
     <>
@@ -80,9 +97,15 @@ export default function App() {
             />
           </div>
 
+          {startNewSession.isError && (
+            <p className='text-red-600 text-center col-span-3'>
+              {startNewSession.error.message}
+            </p>
+          )}
+
           <div className='col-span-3 flex justify-center'>
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={handleStartGame}
               className='relative font-press_start text-xs cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-white rounded-[16px] active:scale-95'
             >
               <span className='w-full h-full flex items-center gap-2 px-8 py-3  bg-[#134E4A] text-white rounded-[14px] text-xs'>

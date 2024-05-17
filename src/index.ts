@@ -1,7 +1,8 @@
 import express from 'express';
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
-import gameRoutes from './routes/gameRoutes';
+import sessionRoutes from './routes/sessionRoutes';
+import path from 'path';
 
 const PORT: number = parseInt(process.env.PORT as string) || 8000;
 const app = express();
@@ -21,7 +22,12 @@ app.listen(PORT, async () => {
   }
 });
 
-app.use('/api/game', gameRoutes);
+app.use('/api/session', sessionRoutes);
+
+app.use(express.static(path.join(__dirname, '../client/dist')));
+app.get('*', (req, res) =>
+  res.sendFile(path.resolve(__dirname, '../', 'client', 'dist', 'index.html'))
+);
 
 app.all('*', (req, res) => {
   res.status(404).send('ROUTE NOT FOUND');

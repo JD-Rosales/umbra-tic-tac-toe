@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export const startNewGame = async ({
+export const startNewSession = async ({
   player1,
   player2,
 }: {

@@ -17,6 +17,7 @@ model Session {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
   rounds    Round[]
   players   Player[]
+  isEnded   Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
