@@ -1,31 +1,46 @@
 import { useEffect, useState } from 'react';
 import Modal from '../components/modal';
 import PageContainer from '../components/page-container';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { boxStateType } from '../types';
 import { useLoadSession } from '../hooks/useSession';
+import LoadingOverlay from '../components/loading-overlay';
+import { cn } from '../lib/utils';
+
+type gameStateType = {
+  turn: number;
+  boxState: boxStateType[];
+};
+
+const gameStateInitialValue: gameStateType = {
+  turn: 1,
+  boxState: ['', '', '', '', '', '', '', '', ''],
+};
 
 export default function Play() {
-  const { data, isSuccess, isError } = useLoadSession(getURLSearchParams());
+  const navigate = useNavigate();
+  const {
+    data: playerData,
+    isSuccess,
+    isError,
+    isLoading: isSessionLoading,
+  } = useLoadSession(getURLSearchParams());
   const [modalOpen, setModalOpen] = useState(false);
-  const [boxState, setBoxState] = useState<boxStateType[]>([
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-    '',
-  ]);
+
+  const [gameState, setGameState] = useState<gameStateType>(
+    gameStateInitialValue
+  );
 
   const handleBoxClick = (index: number) => {
-    setBoxState((prevBoxState) => {
-      const updatedBoxState = [...prevBoxState];
-      updatedBoxState[index] = 'X';
-      return updatedBoxState;
-    });
+    // change box state only if box is not yet click
+    if (gameState.boxState[index] === '') {
+      setGameState((prevState) => {
+        const updatedBoxState = [...prevState.boxState];
+        updatedBoxState[index] = prevState.turn % 2 !== 0 ? 'X' : 'O';
+
+        return { turn: prevState.turn + 1, boxState: updatedBoxState };
+      });
+    }
   };
 
   const checkIfWon = () => {
@@ -42,19 +57,23 @@ export default function Play() {
 
     for (const combo of winningCombos) {
       const [a, b, c] = combo;
-      if (boxState[a] === 'O' && boxState[b] === 'O' && boxState[c] === 'O') {
+      if (
+        gameState.boxState[a] === 'O' &&
+        gameState.boxState[b] === 'O' &&
+        gameState.boxState[c] === 'O'
+      ) {
         console.log('player O wins');
         return;
       } else if (
-        boxState[a] === 'X' &&
-        boxState[b] === 'X' &&
-        boxState[c] === 'X'
+        gameState.boxState[a] === 'X' &&
+        gameState.boxState[b] === 'X' &&
+        gameState.boxState[c] === 'X'
       ) {
         console.log('player X wins');
         return;
       }
 
-      if (boxState.every((box) => box !== '')) {
+      if (gameState.boxState.every((box) => box !== '')) {
         console.log("It's a draw!");
         return;
       }
@@ -62,32 +81,43 @@ export default function Play() {
   };
 
   useEffect(() => {
-    if (location.search) {
-      console.log(location);
-    }
-  }, [location]);
-
-  // check if there's a winner when the boxState array change
-  useEffect(() => {
     checkIfWon();
-  }, [boxState]);
+  }, [gameState]);
 
   useEffect(() => {
-    if (isSuccess) console.log(data);
-  }, [data, isSuccess, isError]);
+    if (isSuccess) console.log(playerData);
+
+    if (isError) {
+      navigate('/');
+    }
+  }, [isSuccess, isError]);
 
   return (
     <>
       <PageContainer className='flex flex-col gap-y-8 justify-center items-center'>
-        <h1 className='font-bold text-4xl'>
-          <span className=''>Player 1</span> turn
-        </h1>
+        {playerData && (
+          <h1 className='font-press_start font-bold text-3xl'>
+            <span>
+              {gameState.turn % 2 !== 0
+                ? playerData.data.players[0].name
+                : playerData.data.players[1].name}
+            </span>{' '}
+            turn
+          </h1>
+        )}
         <div className='grid grid-cols-3 gap-2'>
-          {boxState.map((box, index) => (
+          {gameState.boxState.map((box, index) => (
             <div
               onClick={() => handleBoxClick(index)}
               key={index}
-              className='flex justify-center items-center font-bold text-3xl h-[90px] w-[90px] rounded-md cursor-pointer select-none md:text-4xl md:h-[100px] md:w-[100px] xl:text-5xl xl:h-[110px] xl:w-[110px] bg-teal-900'
+              className={cn(
+                'flex justify-center items-center font-bold text-3xl h-[90px] w-[90px] rounded-md cursor-pointer select-none md:text-4xl md:h-[100px] md:w-[100px] xl:text-5xl xl:h-[110px] xl:w-[110px] bg-teal-900',
+                box === 'X'
+                  ? 'text-blue-600'
+                  : box === 'O'
+                  ? 'text-red-600'
+                  : ''
+              )}
             >
               {box === 'X' ? 'X' : box === 'O' ? 'O' : ''}
             </div>
@@ -98,6 +128,7 @@ export default function Play() {
       <Modal isOpen={modalOpen} onBackdropClick={() => setModalOpen(false)}>
         modal
       </Modal>
+      <LoadingOverlay isOpen={isSessionLoading} />
     </>
   );
 }

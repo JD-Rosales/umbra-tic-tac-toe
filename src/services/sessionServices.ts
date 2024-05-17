@@ -35,6 +35,18 @@ const loadSession = async (sessionId: string) => {
     const session = await prisma.session.findUniqueOrThrow({
       where: {
         id: sessionId,
+        AND: {
+          isEnded: false,
+        },
+      },
+      select: {
+        id: true,
+        players: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
     return session;

@@ -11,13 +11,11 @@ export const useNewSession = () =>
     },
   });
 
-export const useLoadSession = (sessionId: string | null) => {
-  console.log(sessionId);
-  return useQuery({
+export const useLoadSession = (sessionId: string | null) =>
+  useQuery({
     queryKey: ['session'],
     queryFn: () =>
       axios.get(`/api/session/${sessionId}`).catch((error) => {
         throw getErrorMessage(error);
       }),
   });
-};

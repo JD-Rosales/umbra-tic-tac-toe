@@ -42,8 +42,6 @@ export const loadSession = async (req: Request, res: Response) => {
 
     const session = await sessionService.loadSession(validator.sessionId);
 
-    console.log(session);
-
     return res.status(200).json(session);
   } catch (error) {
     return errorHandler(error, res);
