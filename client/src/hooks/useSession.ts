@@ -15,7 +15,16 @@ export const useLoadSession = (sessionId: string | null) =>
   useQuery({
     queryKey: ['session'],
     queryFn: () =>
-      axios.get(`/api/session/${sessionId}`).catch((error) => {
+      axios.get(`/api/session/getSession/${sessionId}`).catch((error) => {
+        throw getErrorMessage(error);
+      }),
+  });
+
+export const getAllSessionHistory = () =>
+  useQuery({
+    queryKey: ['all-session-history'],
+    queryFn: () =>
+      axios.get('/api/session').catch((error) => {
         throw getErrorMessage(error);
       }),
   });

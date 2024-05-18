@@ -55,7 +55,25 @@ const loadSession = async (sessionId: string) => {
   }
 };
 
+const getAllSessionHistory = async () => {
+  try {
+    const sessionHistory = await prisma.session.findMany({
+      select: {
+        id: true,
+        updatedAt: true,
+        players: true,
+        rounds: true,
+      },
+    });
+
+    return sessionHistory;
+  } catch (error) {
+    throw new Error('Invalid game session.');
+  }
+};
+
 export default {
   startNewSession,
   loadSession,
+  getAllSessionHistory,
 };

@@ -45,3 +45,13 @@ export const loadSession = async (req: Request, res: Response) => {
     return errorHandler(error, res);
   }
 };
+
+export const getAllSessionHistory = async (req: Request, res: Response) => {
+  try {
+    const sessionHistory = await sessionService.getAllSessionHistory();
+
+    return res.status(200).json(sessionHistory);
+  } catch (error) {
+    return errorHandler(error, res);
+  }
+};

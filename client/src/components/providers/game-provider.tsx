@@ -1,24 +1,11 @@
 import { useState, useEffect, createContext } from 'react';
-import type { boxStateType } from '../../types';
-
-type GameStateType = {
-  turn: number;
-  boxState: boxStateType[];
-  roundEnd: boolean;
-  result: boxStateType | 'draw';
-};
+import type { GameStateType, GameProviderType } from '../../types';
 
 const gameStateInitialValue: GameStateType = {
   turn: 1,
   boxState: [null, null, null, null, null, null, null, null, null],
   roundEnd: false,
   result: null,
-};
-
-type GameProviderType = {
-  gameState: GameStateType;
-  handleBoxClick: (index: number) => void;
-  resetGameState: () => void;
 };
 
 export const GameProviderContext = createContext<GameProviderType | null>(null);
@@ -70,10 +57,6 @@ export default function GameProvider({
         gameState.boxState[c] === 'X'
       ) {
         console.log('player 1 wins');
-        //   saveRoundEnd.mutate({
-        //     sessionId: sessionData?.data.id,
-        //     winnerId: sessionData?.data.players[0].id,
-        //   });
         setGameState((prev) => ({ ...prev, roundEnd: true, result: 'X' }));
         isWin = true;
         break; // Exit the loop if we found a winner
@@ -83,10 +66,6 @@ export default function GameProvider({
         gameState.boxState[c] === 'O'
       ) {
         console.log('player 2 wins');
-        //   saveRoundEnd.mutate({
-        //     sessionId: sessionData?.data.id,
-        //     winnerId: sessionData?.data.players[1].id,
-        //   });
         setGameState((prev) => ({ ...prev, roundEnd: true, result: 'O' }));
         isWin = true;
         break; // Exit the loop if we found a winner

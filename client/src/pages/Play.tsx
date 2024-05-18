@@ -18,6 +18,10 @@ export default function Play() {
   const saveRoundEnd = useSaveRoundEnd();
   const { gameState, handleBoxClick, resetGameState } = useGame();
 
+  const handleStopGame = () => {
+    navigate('/', { replace: true });
+  };
+
   // save result to database on round end
   useEffect(() => {
     if (gameState.roundEnd) {
@@ -49,12 +53,10 @@ export default function Play() {
     <>
       <PageContainer className='flex flex-col gap-y-8 justify-center items-center'>
         {sessionData && (
-          <h1 className='font-press_start font-bold text-3xl'>
-            <span>
-              {gameState.turn % 2 !== 0
-                ? sessionData.data.players[0].name
-                : sessionData.data.players[1].name}
-            </span>{' '}
+          <h1 className='font-bold text-3xl'>
+            {gameState.turn % 2 !== 0
+              ? `${sessionData.data.players[0].name}`
+              : `${sessionData.data.players[1].name}`}{' '}
             turn
           </h1>
         )}
@@ -80,7 +82,7 @@ export default function Play() {
 
       <Modal
         isOpen={gameState.roundEnd && !saveRoundEnd.isPending}
-        className='flex flex-col justify-center items-center gap-y-8 font-press_start py-8 mx-2'
+        className='flex flex-col justify-center items-center gap-y-8 py-8 mx-2'
       >
         <span className=''>Player {gameState.result} Win!</span>
 
@@ -91,7 +93,12 @@ export default function Play() {
           >
             Continue
           </button>
-          <button className='bg-red-400 p-2 rounded-md'>Stop</button>
+          <button
+            onClick={handleStopGame}
+            className='bg-red-400 p-2 rounded-md'
+          >
+            Stop
+          </button>
         </div>
       </Modal>
       <LoadingOverlay isOpen={isSessionLoading || saveRoundEnd.isPending} />

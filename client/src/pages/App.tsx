@@ -4,6 +4,7 @@ import PageContainer from '../components/page-container';
 import Versus from '../components/versus';
 import { useNewSession } from '../hooks/useSession';
 import { useNavigate } from 'react-router-dom';
+import GameHistory from '../components/game-history';
 
 export default function App() {
   const startNewSession = useNewSession();
@@ -36,27 +37,36 @@ export default function App() {
 
   return (
     <>
-      <PageContainer className='flex flex-col justify-center items-center'>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className='relative font-press_start text-xs cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-white rounded-[16px] active:scale-95'
-        >
-          <span className='w-full h-full flex items-center gap-2 px-8 py-3  bg-[#134E4A] text-white rounded-[14px]'>
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              viewBox='0 0 24 24'
-              className='w-7 h-7'
-              fill='none'
-              stroke='currentColor'
-              strokeLinecap='round'
-              strokeLinejoin='round'
-              strokeWidth='2'
-            >
-              <path d='M8 13V9m-2 2h4m5-2v.001M18 12v.001m4-.334v5.243a3.09 3.09 0 0 1-5.854 1.382L16 18a3.618 3.618 0 0 0-3.236-2h-1.528c-1.37 0-2.623.774-3.236 2l-.146.292A3.09 3.09 0 0 1 2 16.91v-5.243A6.667 6.667 0 0 1 8.667 5h6.666A6.667 6.667 0 0 1 22 11.667Z'></path>
-            </svg>
-            START NEW GAME
-          </span>
-        </button>
+      <PageContainer className='flex flex-col items-center'>
+        <div className='sticky top-0 z-10 pb-6 w-full flex flex-col items-center bg-[#111B22]'>
+          <h1 className='font-bold text-3xl py-8 text-center'>
+            <span>Umbra</span> <span className='text-[#37A7BD]'>Digital</span>
+            <br />
+            Tic-Tac-Toe Game
+          </h1>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className='relative font-press_start text-xs cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-white rounded-[16px] active:scale-95'
+          >
+            <span className='w-full h-full flex items-center gap-2 px-8 py-3  bg-[#134E4A] text-white rounded-[14px]'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                viewBox='0 0 24 24'
+                className='w-7 h-7'
+                fill='none'
+                stroke='currentColor'
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth='2'
+              >
+                <path d='M8 13V9m-2 2h4m5-2v.001M18 12v.001m4-.334v5.243a3.09 3.09 0 0 1-5.854 1.382L16 18a3.618 3.618 0 0 0-3.236-2h-1.528c-1.37 0-2.623.774-3.236 2l-.146.292A3.09 3.09 0 0 1 2 16.91v-5.243A6.667 6.667 0 0 1 8.667 5h6.666A6.667 6.667 0 0 1 22 11.667Z'></path>
+              </svg>
+              START NEW GAME
+            </span>
+          </button>
+        </div>
+
+        <GameHistory />
       </PageContainer>
 
       <Modal
@@ -94,17 +104,23 @@ export default function App() {
               type='text'
             />
           </div>
-
           {startNewSession.isError && (
             <p className='text-red-600 text-center col-span-3'>
               {startNewSession.error.message}
             </p>
           )}
 
+          {startNewSession.isPending && (
+            <p className='text-center text-lg italic col-span-3'>
+              Please wait...
+            </p>
+          )}
+
           <div className='col-span-3 flex justify-center'>
             <button
               onClick={handleStartGame}
-              className='relative font-press_start text-xs cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-white rounded-[16px] active:scale-95'
+              disabled={startNewSession.isPending}
+              className='relative font-press_start text-xs cursor-pointer opacity-90 hover:opacity-100 transition-opacity p-[2px] bg-white rounded-[16px] active:scale-95 disabled:opacity-70'
             >
               <span className='w-full h-full flex items-center gap-2 px-8 py-3  bg-[#134E4A] text-white rounded-[14px] text-xs'>
                 <svg
