@@ -1,1 +1,1 @@
-export type boxStateType = '' | 'O' | 'X';
+export type boxStateType = null | 'O' | 'X';

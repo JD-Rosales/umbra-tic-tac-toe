@@ -30,8 +30,6 @@ export default function App() {
   useEffect(() => {
     if (startNewSession.isSuccess) {
       startNewSession.reset();
-
-      console.log(startNewSession.data.data.id);
       navigate(`/play?sessionId=${startNewSession.data.data.id}`);
     }
   }, [startNewSession.isSuccess]);

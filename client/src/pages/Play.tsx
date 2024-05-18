@@ -1,128 +1,49 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Modal from '../components/modal';
 import PageContainer from '../components/page-container';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { boxStateType } from '../types';
 import { useLoadSession } from '../hooks/useSession';
 import { useSaveRoundEnd } from '../hooks/useRound';
 import LoadingOverlay from '../components/loading-overlay';
 import { cn } from '../lib/utils';
-
-type GameStateType = {
-  turn: number;
-  boxState: boxStateType[];
-  roundEnd: boolean;
-};
-
-type ModalStateType = {
-  open: boolean;
-  result: boxStateType;
-};
-
-const gameStateInitialValue: GameStateType = {
-  turn: 1,
-  boxState: ['', '', '', '', '', '', '', '', ''],
-  roundEnd: false,
-};
+import { useGame } from '../context/useGame';
 
 export default function Play() {
   const navigate = useNavigate();
   const {
     data: sessionData,
-    isSuccess,
     isError,
     isLoading: isSessionLoading,
   } = useLoadSession(getURLSearchParams());
   const saveRoundEnd = useSaveRoundEnd();
-  const [modalState, setModalState] = useState<ModalStateType>({
-    open: false,
-    result: '',
-  });
-  const [gameState, setGameState] = useState<GameStateType>(
-    gameStateInitialValue
-  );
+  const { gameState, handleBoxClick, resetGameState } = useGame();
 
-  const handleBoxClick = (index: number) => {
-    // change box state only if box is not yet click and round has not ended
-    if (gameState.boxState[index] === '' && !gameState.roundEnd) {
-      setGameState((prevState) => {
-        const updatedBoxState = [...prevState.boxState];
-        updatedBoxState[index] = prevState.turn % 2 !== 0 ? 'X' : 'O';
-
-        return {
-          turn: prevState.turn + 1,
-          boxState: updatedBoxState,
-          roundEnd: false,
-        };
-      });
-    }
-  };
-
-  const checkGameEnd = () => {
-    let isWin = false;
-    const winningCombos = [
-      [0, 1, 2],
-      [3, 4, 5],
-      [6, 7, 8],
-      [0, 3, 6],
-      [1, 4, 7],
-      [2, 5, 8],
-      [0, 4, 8],
-      [2, 4, 6],
-    ];
-
-    for (const combo of winningCombos) {
-      const [a, b, c] = combo;
-      if (
-        gameState.boxState[a] === 'X' &&
-        gameState.boxState[b] === 'X' &&
-        gameState.boxState[c] === 'X'
-      ) {
-        console.log('player 1 wins');
+  // save result to database on round end
+  useEffect(() => {
+    if (gameState.roundEnd) {
+      if (gameState.result === 'X') {
         saveRoundEnd.mutate({
           sessionId: sessionData?.data.id,
           winnerId: sessionData?.data.players[0].id,
         });
-        setModalState({ open: true, result: 'X' });
-        setGameState((prev) => ({ ...prev, roundEnd: true }));
-        isWin = true;
-        break; // Exit the loop if we found a winner
-      } else if (
-        gameState.boxState[a] === 'O' &&
-        gameState.boxState[b] === 'O' &&
-        gameState.boxState[c] === 'O'
-      ) {
-        console.log('player 2 wins');
+      } else if (gameState.result === 'O') {
         saveRoundEnd.mutate({
           sessionId: sessionData?.data.id,
           winnerId: sessionData?.data.players[1].id,
         });
-        setModalState({ open: true, result: 'O' });
-        setGameState((prev) => ({ ...prev, roundEnd: true }));
-        isWin = true;
-        break; // Exit the loop if we found a winner
+      } else {
+        saveRoundEnd.mutate({
+          sessionId: sessionData?.data.id,
+        });
       }
     }
-
-    // Check for a draw only if no winner was found
-    if (!isWin && gameState.boxState.every((box) => box !== '')) {
-      console.log("It's a draw!");
-      setModalState({ open: true, result: '' });
-      setGameState((prev) => ({ ...prev, roundEnd: true }));
-    }
-  };
+  }, [gameState.roundEnd]);
 
   useEffect(() => {
-    checkGameEnd();
-  }, [gameState.turn]);
-
-  useEffect(() => {
-    if (isSuccess) console.log(sessionData);
-
     if (isError) {
       navigate('/');
     }
-  }, [isSuccess, isError]);
+  }, [isError]);
 
   return (
     <>
@@ -157,8 +78,21 @@ export default function Play() {
         </div>
       </PageContainer>
 
-      <Modal isOpen={modalState.open && !saveRoundEnd.isPending}>
-        {modalState.result}
+      <Modal
+        isOpen={gameState.roundEnd && !saveRoundEnd.isPending}
+        className='flex flex-col justify-center items-center gap-y-8 font-press_start py-8 mx-2'
+      >
+        <span className=''>Player {gameState.result} Win!</span>
+
+        <div className='grid grid-cols-2 gap-x-4'>
+          <button
+            onClick={resetGameState}
+            className='bg-green-400 p-2 rounded-md'
+          >
+            Continue
+          </button>
+          <button className='bg-red-400 p-2 rounded-md'>Stop</button>
+        </div>
       </Modal>
       <LoadingOverlay isOpen={isSessionLoading || saveRoundEnd.isPending} />
     </>
