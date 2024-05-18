@@ -2,6 +2,7 @@ import express from 'express';
 import 'dotenv/config';
 import { PrismaClient } from '@prisma/client';
 import sessionRoutes from './routes/sessionRoutes';
+import roundRoutes from './routes/roundRoutes';
 import path from 'path';
 
 const PORT: number = parseInt(process.env.PORT as string) || 8000;
@@ -23,6 +24,7 @@ app.listen(PORT, async () => {
 });
 
 app.use('/api/session', sessionRoutes);
+app.use('/api/round', roundRoutes);
 
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.get('*', (req, res) =>

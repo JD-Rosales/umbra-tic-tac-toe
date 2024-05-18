@@ -4,46 +4,62 @@ import PageContainer from '../components/page-container';
 import { useLocation, useNavigate } from 'react-router-dom';
 import type { boxStateType } from '../types';
 import { useLoadSession } from '../hooks/useSession';
+import { useSaveRoundEnd } from '../hooks/useRound';
 import LoadingOverlay from '../components/loading-overlay';
 import { cn } from '../lib/utils';
 
-type gameStateType = {
+type GameStateType = {
   turn: number;
   boxState: boxStateType[];
+  roundEnd: boolean;
 };
 
-const gameStateInitialValue: gameStateType = {
+type ModalStateType = {
+  open: boolean;
+  result: boxStateType;
+};
+
+const gameStateInitialValue: GameStateType = {
   turn: 1,
   boxState: ['', '', '', '', '', '', '', '', ''],
+  roundEnd: false,
 };
 
 export default function Play() {
   const navigate = useNavigate();
   const {
-    data: playerData,
+    data: sessionData,
     isSuccess,
     isError,
     isLoading: isSessionLoading,
   } = useLoadSession(getURLSearchParams());
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const [gameState, setGameState] = useState<gameStateType>(
+  const saveRoundEnd = useSaveRoundEnd();
+  const [modalState, setModalState] = useState<ModalStateType>({
+    open: false,
+    result: '',
+  });
+  const [gameState, setGameState] = useState<GameStateType>(
     gameStateInitialValue
   );
 
   const handleBoxClick = (index: number) => {
-    // change box state only if box is not yet click
-    if (gameState.boxState[index] === '') {
+    // change box state only if box is not yet click and round has not ended
+    if (gameState.boxState[index] === '' && !gameState.roundEnd) {
       setGameState((prevState) => {
         const updatedBoxState = [...prevState.boxState];
         updatedBoxState[index] = prevState.turn % 2 !== 0 ? 'X' : 'O';
 
-        return { turn: prevState.turn + 1, boxState: updatedBoxState };
+        return {
+          turn: prevState.turn + 1,
+          boxState: updatedBoxState,
+          roundEnd: false,
+        };
       });
     }
   };
 
-  const checkIfWon = () => {
+  const checkGameEnd = () => {
+    let isWin = false;
     const winningCombos = [
       [0, 1, 2],
       [3, 4, 5],
@@ -58,34 +74,50 @@ export default function Play() {
     for (const combo of winningCombos) {
       const [a, b, c] = combo;
       if (
-        gameState.boxState[a] === 'O' &&
-        gameState.boxState[b] === 'O' &&
-        gameState.boxState[c] === 'O'
-      ) {
-        console.log('player O wins');
-        return;
-      } else if (
         gameState.boxState[a] === 'X' &&
         gameState.boxState[b] === 'X' &&
         gameState.boxState[c] === 'X'
       ) {
-        console.log('player X wins');
-        return;
+        console.log('player 1 wins');
+        saveRoundEnd.mutate({
+          sessionId: sessionData?.data.id,
+          winnerId: sessionData?.data.players[0].id,
+        });
+        setModalState({ open: true, result: 'X' });
+        setGameState((prev) => ({ ...prev, roundEnd: true }));
+        isWin = true;
+        break; // Exit the loop if we found a winner
+      } else if (
+        gameState.boxState[a] === 'O' &&
+        gameState.boxState[b] === 'O' &&
+        gameState.boxState[c] === 'O'
+      ) {
+        console.log('player 2 wins');
+        saveRoundEnd.mutate({
+          sessionId: sessionData?.data.id,
+          winnerId: sessionData?.data.players[1].id,
+        });
+        setModalState({ open: true, result: 'O' });
+        setGameState((prev) => ({ ...prev, roundEnd: true }));
+        isWin = true;
+        break; // Exit the loop if we found a winner
       }
+    }
 
-      if (gameState.boxState.every((box) => box !== '')) {
-        console.log("It's a draw!");
-        return;
-      }
+    // Check for a draw only if no winner was found
+    if (!isWin && gameState.boxState.every((box) => box !== '')) {
+      console.log("It's a draw!");
+      setModalState({ open: true, result: '' });
+      setGameState((prev) => ({ ...prev, roundEnd: true }));
     }
   };
 
   useEffect(() => {
-    checkIfWon();
-  }, [gameState]);
+    checkGameEnd();
+  }, [gameState.turn]);
 
   useEffect(() => {
-    if (isSuccess) console.log(playerData);
+    if (isSuccess) console.log(sessionData);
 
     if (isError) {
       navigate('/');
@@ -95,12 +127,12 @@ export default function Play() {
   return (
     <>
       <PageContainer className='flex flex-col gap-y-8 justify-center items-center'>
-        {playerData && (
+        {sessionData && (
           <h1 className='font-press_start font-bold text-3xl'>
             <span>
               {gameState.turn % 2 !== 0
-                ? playerData.data.players[0].name
-                : playerData.data.players[1].name}
+                ? sessionData.data.players[0].name
+                : sessionData.data.players[1].name}
             </span>{' '}
             turn
           </h1>
@@ -125,10 +157,10 @@ export default function Play() {
         </div>
       </PageContainer>
 
-      <Modal isOpen={modalOpen} onBackdropClick={() => setModalOpen(false)}>
-        modal
+      <Modal isOpen={modalState.open && !saveRoundEnd.isPending}>
+        {modalState.result}
       </Modal>
-      <LoadingOverlay isOpen={isSessionLoading} />
+      <LoadingOverlay isOpen={isSessionLoading || saveRoundEnd.isPending} />
     </>
   );
 }

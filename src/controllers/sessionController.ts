@@ -30,8 +30,6 @@ export const loadSession = async (req: Request, res: Response) => {
   try {
     const sessionId = req.params.sessionId;
 
-    console.log(sessionId);
-
     const Schema = z.object({
       sessionId: z
         .string({ required_error: 'Invalid game session.' })
