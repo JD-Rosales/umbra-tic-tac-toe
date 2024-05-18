@@ -64,6 +64,9 @@ const getAllSessionHistory = async () => {
         players: true,
         rounds: true,
       },
+      orderBy: {
+        updatedAt: 'desc',
+      },
     });
 
     return sessionHistory;

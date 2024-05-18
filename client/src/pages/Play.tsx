@@ -7,6 +7,7 @@ import { useSaveRoundEnd } from '../hooks/useRound';
 import LoadingOverlay from '../components/loading-overlay';
 import { cn } from '../lib/utils';
 import { useGame } from '../context/useGame';
+import { WinnerImage } from '../components/winner-image';
 
 export default function Play() {
   const navigate = useNavigate();
@@ -17,6 +18,14 @@ export default function Play() {
   } = useLoadSession(getURLSearchParams());
   const saveRoundEnd = useSaveRoundEnd();
   const { gameState, handleBoxClick, resetGameState } = useGame();
+
+  const getWinnerName = () => {
+    if (gameState.result === 'X')
+      return sessionData?.data.players[0].name + ' Wins';
+    else if (gameState.result === 'O')
+      return sessionData?.data.players[1].name + ' Wins';
+    else return 'Draw';
+  };
 
   const handleStopGame = () => {
     navigate('/', { replace: true });
@@ -82,20 +91,24 @@ export default function Play() {
 
       <Modal
         isOpen={gameState.roundEnd && !saveRoundEnd.isPending}
-        className='flex flex-col justify-center items-center gap-y-8 py-8 mx-2'
+        className='flex flex-col justify-center items-center w-full max-w-md gap-y-1 pb-6 mx-2'
       >
-        <span className=''>Player {gameState.result} Win!</span>
+        <span className='font-bold text-2xl'>{getWinnerName()}</span>
 
-        <div className='grid grid-cols-2 gap-x-4'>
+        <div className='w-full px-4'>
+          <WinnerImage />
+        </div>
+
+        <div className='grid grid-cols-2 gap-x-6 font-bold text-white'>
           <button
             onClick={resetGameState}
-            className='bg-green-400 p-2 rounded-md'
+            className='bg-teal-900 px-4 py-3 rounded-md'
           >
             Continue
           </button>
           <button
             onClick={handleStopGame}
-            className='bg-red-400 p-2 rounded-md'
+            className='bg-red-900 px-4 py-3 rounded-md'
           >
             Stop
           </button>
